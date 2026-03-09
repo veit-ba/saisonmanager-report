@@ -1,0 +1,4593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>League Stats – 1. FBL Herren</title>
+  <style>
+:root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --accent: #4f8ef7;
+    --accent2: #f76b4f;
+    --text: #e8eaf0;
+    --muted: #8892a4;
+    --green: #4caf76;
+    --red: #e05858;
+    --gold: #f5c842;
+    --border: rgba(255,255,255,0.07);
+    --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+       font-size: 14px; line-height: 1.5; }
+h1 { font-size: 1.8rem; font-weight: 700; color: #fff; }
+h2 { font-size: 1.2rem; font-weight: 600; color: var(--accent); margin-bottom: 14px; text-transform: uppercase;
+     letter-spacing: .05em; }
+h3 { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
+.page { max-width: 1400px; margin: 0 auto; padding: 24px 16px; }
+.header { display: flex; align-items: center; gap: 16px; padding: 24px 28px;
+          background: var(--surface); border-radius: var(--radius); margin-bottom: 28px; }
+.header-text { flex: 1; }
+.header-meta { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+.badge { background: var(--accent); color: #fff; border-radius: 6px; padding: 3px 10px;
+         font-size: .75rem; font-weight: 600; }
+.section { margin-bottom: 32px; }
+.card { background: var(--surface); border-radius: var(--radius); padding: 22px 24px;
+        border: 1px solid var(--border); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+table { width: 100%; border-collapse: collapse; }
+thead th { background: var(--surface2); color: var(--muted); font-size: .75rem; font-weight: 600;
+           text-transform: uppercase; letter-spacing: .06em; padding: 9px 12px; text-align: left; }
+thead th:not(:first-child) { text-align: right; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+tbody tr:hover { background: var(--surface2); }
+tbody td { padding: 9px 12px; }
+tbody td:not(:first-child) { text-align: right; color: var(--muted); }
+tbody td:first-child { color: var(--text); }
+.rank { color: var(--muted); font-size: .8rem; width: 28px; }
+.team-name { font-weight: 500; }
+.pts { color: var(--accent) !important; font-weight: 700; font-size: .95rem; }
+.good { color: var(--green) !important; font-weight: 600; }
+.bad  { color: var(--red) !important; font-weight: 600; }
+.stat-row { display: flex; justify-content: space-between; align-items: center;
+            padding: 7px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--muted); font-size: .85rem; }
+.stat-value { font-weight: 600; font-size: .95rem; }
+.bar-wrap { height: 6px; background: var(--surface2); border-radius: 3px; flex: 1;
+            margin: 0 10px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+.bar-fill.red { background: var(--red); }
+.pp-pct { font-weight: 700; font-size: .85rem; color: var(--gold); }
+.scorer-row td { font-size: .85rem; }
+.scorer-name { font-weight: 500; }
+.chip { display: inline-block; background: var(--surface2); border-radius: 4px;
+        padding: 2px 7px; font-size: .75rem; margin-left: 4px; color: var(--muted); }
+.schedule-item { display: flex; align-items: center; gap: 10px; padding: 10px 0;
+                 border-bottom: 1px solid var(--border); }
+.schedule-item:last-child { border-bottom: none; }
+.schedule-teams { flex: 1; }
+.schedule-home, .schedule-guest { font-weight: 500; }
+.schedule-vs { color: var(--muted); font-size: .8rem; margin: 2px 0; }
+.schedule-meta { text-align: right; color: var(--muted); font-size: .82rem; min-width: 120px; }
+.result-score { font-size: 1.1rem; font-weight: 700; color: var(--accent); text-align: right; min-width: 60px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: .85rem; font-weight: 500;
+       background: var(--surface2); color: var(--muted); border: 1px solid var(--border);
+       transition: all .15s; }
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.team-section { display: none; }
+.team-section.active { display: block; }
+.top3 td:nth-child(1) { color: var(--gold); font-weight: 700; }
+@media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .grid-auto { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+  <div class="page">
+    
+    <div class="header">
+      <div class="header-text">
+        <h1>1. FBL Herren</h1>
+        <div class="header-meta">Floorball Deutschland &nbsp;·&nbsp; As of: 2026-03-09 11:55</div>
+      </div>
+      <span class="badge">Season 2025/2026</span>
+    </div>
+    
+    <div class="section card">
+      <h2>Standings</h2>
+      <table>
+        <thead><tr>
+          <th>#</th><th>Team</th><th>GP</th><th>W</th><th>OTW</th><th>OTL</th><th>L</th>
+          <th>Goals</th><th>Diff</th><th>Pts</th>
+        </tr></thead>
+        <tbody>
+        <tr>
+          <td class="rank">1</td>
+          <td class="team-name">MFBC Leipzig</td>
+          <td>18</td>
+          <td>13</td>
+          <td>2</td>
+          <td>0</td>
+          <td>3</td>
+          <td>102:76</td>
+          <td class="good">+26</td>
+          <td class="pts">43</td>
+        </tr>
+        <tr>
+          <td class="rank">2</td>
+          <td class="team-name">UHC Sparkasse Weißenfels</td>
+          <td>18</td>
+          <td>12</td>
+          <td>1</td>
+          <td>1</td>
+          <td>4</td>
+          <td>128:89</td>
+          <td class="good">+39</td>
+          <td class="pts">39</td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td class="team-name">SSF Dragons Bonn</td>
+          <td>19</td>
+          <td>10</td>
+          <td>3</td>
+          <td>3</td>
+          <td>3</td>
+          <td>121:87</td>
+          <td class="good">+34</td>
+          <td class="pts">39</td>
+        </tr>
+        <tr>
+          <td class="rank">4</td>
+          <td class="team-name">Floor Fighters Chemnitz</td>
+          <td>18</td>
+          <td>9</td>
+          <td>3</td>
+          <td>3</td>
+          <td>3</td>
+          <td>128:81</td>
+          <td class="good">+47</td>
+          <td class="pts">36</td>
+        </tr>
+        <tr>
+          <td class="rank">5</td>
+          <td class="team-name">ETV Piranhhas Hamburg</td>
+          <td>17</td>
+          <td>8</td>
+          <td>2</td>
+          <td>1</td>
+          <td>6</td>
+          <td>108:97</td>
+          <td class="good">+11</td>
+          <td class="pts">29</td>
+        </tr>
+        <tr>
+          <td class="rank">6</td>
+          <td class="team-name">SC DHfK Leipzig</td>
+          <td>17</td>
+          <td>7</td>
+          <td>2</td>
+          <td>3</td>
+          <td>5</td>
+          <td>107:100</td>
+          <td class="good">+7</td>
+          <td class="pts">28</td>
+        </tr>
+        <tr>
+          <td class="rank">7</td>
+          <td class="team-name">DJK Holzbüttgen</td>
+          <td>18</td>
+          <td>7</td>
+          <td>2</td>
+          <td>1</td>
+          <td>8</td>
+          <td>118:110</td>
+          <td class="good">+8</td>
+          <td class="pts">26</td>
+        </tr>
+        <tr>
+          <td class="rank">8</td>
+          <td class="team-name">Unihockey Igels Dresden</td>
+          <td>19</td>
+          <td>4</td>
+          <td>2</td>
+          <td>3</td>
+          <td>10</td>
+          <td>108:131</td>
+          <td class="bad">-23</td>
+          <td class="pts">19</td>
+        </tr>
+        <tr>
+          <td class="rank">9</td>
+          <td class="team-name">Blau-Weiß 96 Schenefeld</td>
+          <td>18</td>
+          <td>3</td>
+          <td>2</td>
+          <td>3</td>
+          <td>10</td>
+          <td>87:130</td>
+          <td class="bad">-43</td>
+          <td class="pts">16</td>
+        </tr>
+        <tr>
+          <td class="rank">10</td>
+          <td class="team-name">SC Potsdam</td>
+          <td>18</td>
+          <td>3</td>
+          <td>1</td>
+          <td>1</td>
+          <td>13</td>
+          <td>98:149</td>
+          <td class="bad">-51</td>
+          <td class="pts">12</td>
+        </tr>
+        <tr>
+          <td class="rank">11</td>
+          <td class="team-name">Berlin Rockets</td>
+          <td>18</td>
+          <td>2</td>
+          <td>1</td>
+          <td>2</td>
+          <td>13</td>
+          <td>69:124</td>
+          <td class="bad">-55</td>
+          <td class="pts">10</td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="section card">
+      <h2>Goals &amp; Goals Against Comparison</h2>
+      <table>
+        <thead><tr>
+          <th>Team</th><th>Goals Scored</th><th>Goals Against</th><th>Difference</th>
+        </tr></thead>
+        <tbody>
+        <tr>
+          <td class="team-name">MFBC Leipzig</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:80%"></div></div>
+              <span class="good">102</span>
+              <span class="chip">5.67/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:51%"></div></div>
+              <span class="bad">76</span>
+              <span class="chip">4.22/GP</span>
+            </div>
+          </td>
+          <td>+26</td>
+        </tr>
+        <tr>
+          <td class="team-name">UHC Sparkasse Weißenfels</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:100%"></div></div>
+              <span class="good">128</span>
+              <span class="chip">7.11/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:60%"></div></div>
+              <span class="bad">89</span>
+              <span class="chip">4.94/GP</span>
+            </div>
+          </td>
+          <td>+39</td>
+        </tr>
+        <tr>
+          <td class="team-name">SSF Dragons Bonn</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:95%"></div></div>
+              <span class="good">121</span>
+              <span class="chip">6.37/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:58%"></div></div>
+              <span class="bad">87</span>
+              <span class="chip">4.58/GP</span>
+            </div>
+          </td>
+          <td>+34</td>
+        </tr>
+        <tr>
+          <td class="team-name">Floor Fighters Chemnitz</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:100%"></div></div>
+              <span class="good">128</span>
+              <span class="chip">7.11/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:54%"></div></div>
+              <span class="bad">81</span>
+              <span class="chip">4.50/GP</span>
+            </div>
+          </td>
+          <td>+47</td>
+        </tr>
+        <tr>
+          <td class="team-name">ETV Piranhhas Hamburg</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:84%"></div></div>
+              <span class="good">108</span>
+              <span class="chip">6.35/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:65%"></div></div>
+              <span class="bad">97</span>
+              <span class="chip">5.71/GP</span>
+            </div>
+          </td>
+          <td>+11</td>
+        </tr>
+        <tr>
+          <td class="team-name">SC DHfK Leipzig</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:84%"></div></div>
+              <span class="good">107</span>
+              <span class="chip">6.29/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:67%"></div></div>
+              <span class="bad">100</span>
+              <span class="chip">5.88/GP</span>
+            </div>
+          </td>
+          <td>+7</td>
+        </tr>
+        <tr>
+          <td class="team-name">DJK Holzbüttgen</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:92%"></div></div>
+              <span class="good">118</span>
+              <span class="chip">6.56/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:74%"></div></div>
+              <span class="bad">110</span>
+              <span class="chip">6.11/GP</span>
+            </div>
+          </td>
+          <td>+8</td>
+        </tr>
+        <tr>
+          <td class="team-name">Unihockey Igels Dresden</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:84%"></div></div>
+              <span class="good">108</span>
+              <span class="chip">5.68/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:88%"></div></div>
+              <span class="bad">131</span>
+              <span class="chip">6.89/GP</span>
+            </div>
+          </td>
+          <td>-23</td>
+        </tr>
+        <tr>
+          <td class="team-name">Blau-Weiß 96 Schenefeld</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:68%"></div></div>
+              <span class="good">87</span>
+              <span class="chip">4.83/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:87%"></div></div>
+              <span class="bad">130</span>
+              <span class="chip">7.22/GP</span>
+            </div>
+          </td>
+          <td>-43</td>
+        </tr>
+        <tr>
+          <td class="team-name">SC Potsdam</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:77%"></div></div>
+              <span class="good">98</span>
+              <span class="chip">5.44/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:100%"></div></div>
+              <span class="bad">149</span>
+              <span class="chip">8.28/GP</span>
+            </div>
+          </td>
+          <td>-51</td>
+        </tr>
+        <tr>
+          <td class="team-name">Berlin Rockets</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:54%"></div></div>
+              <span class="good">69</span>
+              <span class="chip">3.83/GP</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill red" style="width:83%"></div></div>
+              <span class="bad">124</span>
+              <span class="chip">6.89/GP</span>
+            </div>
+          </td>
+          <td>-55</td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="section">
+      <h2>Team Overview</h2>
+      <div class="grid-auto">
+        <div class="card">
+          <h3>MFBC Leipzig</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">5.67</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">4.22</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:55%"></div></div>
+              <span class="pp-pct">26.3%</span>
+              <span class="chip">10/38</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:64%"></div></div>
+              <span class="pp-pct">64.0%</span>
+              <span class="chip">16/25</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">9</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>UHC Sparkasse Weißenfels</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">7.11</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">4.94</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:59%"></div></div>
+              <span class="pp-pct">28.1%</span>
+              <span class="chip">9/32</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:64%"></div></div>
+              <span class="pp-pct">63.6%</span>
+              <span class="chip">21/33</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">12</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>SSF Dragons Bonn</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">6.37</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">4.58</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:86%"></div></div>
+              <span class="pp-pct">40.7%</span>
+              <span class="chip">11/27</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:79%"></div></div>
+              <span class="pp-pct">78.9%</span>
+              <span class="chip">15/19</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">4</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Floor Fighters Chemnitz</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">7.11</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">4.50</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:88%"></div></div>
+              <span class="pp-pct">41.7%</span>
+              <span class="chip">15/36</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:66%"></div></div>
+              <span class="pp-pct">65.7%</span>
+              <span class="chip">23/35</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">12</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>ETV Piranhhas Hamburg</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">6.35</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">5.71</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:78%"></div></div>
+              <span class="pp-pct">37.0%</span>
+              <span class="chip">10/27</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:81%"></div></div>
+              <span class="pp-pct">80.6%</span>
+              <span class="chip">29/36</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">7</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>SC DHfK Leipzig</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">6.29</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">5.88</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:72%"></div></div>
+              <span class="pp-pct">34.3%</span>
+              <span class="chip">12/35</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:63%"></div></div>
+              <span class="pp-pct">63.2%</span>
+              <span class="chip">24/38</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">14</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>DJK Holzbüttgen</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">6.56</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">6.11</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:80%"></div></div>
+              <span class="pp-pct">38.2%</span>
+              <span class="chip">13/34</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:74%"></div></div>
+              <span class="pp-pct">73.8%</span>
+              <span class="chip">31/42</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">11</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Unihockey Igels Dresden</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">5.68</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">6.89</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:81%"></div></div>
+              <span class="pp-pct">38.5%</span>
+              <span class="chip">10/26</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:57%"></div></div>
+              <span class="pp-pct">56.7%</span>
+              <span class="chip">17/30</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">13</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Blau-Weiß 96 Schenefeld</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">4.83</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">7.22</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:100%"></div></div>
+              <span class="pp-pct">47.6%</span>
+              <span class="chip">20/42</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:61%"></div></div>
+              <span class="pp-pct">61.1%</span>
+              <span class="chip">22/36</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">14</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>SC Potsdam</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">5.44</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">8.28</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:77%"></div></div>
+              <span class="pp-pct">36.7%</span>
+              <span class="chip">11/30</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:46%"></div></div>
+              <span class="pp-pct">46.0%</span>
+              <span class="chip">23/50</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">27</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Berlin Rockets</h3>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals / Game</span>
+            <span class="stat-value good">3.83</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Avg Goals Against / Game</span>
+            <span class="stat-value bad">6.89</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Power Play</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:51%"></div></div>
+              <span class="pp-pct">24.5%</span>
+              <span class="chip">12/49</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Penalty Kill</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="bar-wrap"><div class="bar-fill " style="width:69%"></div></div>
+              <span class="pp-pct">68.8%</span>
+              <span class="chip">22/32</span>
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Goals Against (Shorthanded)</span>
+            <span class="stat-value bad">10</span>
+          </div>
+        </div></div>
+    </div>
+    <div class="section card">
+      <h2>Power Play &amp; Penalty Kill Comparison</h2>
+      <table>
+        <thead><tr>
+          <th>Team</th>
+          <th>PP Goals / Opp</th><th>PP%</th>
+          <th>PK / Opp</th><th>PK%</th>
+          <th>GA Shorthanded</th>
+        </tr></thead>
+        <tbody>
+        <tr>
+          <td class="team-name">Blau-Weiß 96 Schenefeld</td>
+          <td>20/42</td>
+          <td class="good">47.6%</td>
+          <td>22/36</td>
+          <td class="good">61.1%</td>
+          <td class="bad">14</td>
+        </tr>
+        <tr>
+          <td class="team-name">Floor Fighters Chemnitz</td>
+          <td>15/36</td>
+          <td class="good">41.7%</td>
+          <td>23/35</td>
+          <td class="good">65.7%</td>
+          <td class="bad">12</td>
+        </tr>
+        <tr>
+          <td class="team-name">SSF Dragons Bonn</td>
+          <td>11/27</td>
+          <td class="good">40.7%</td>
+          <td>15/19</td>
+          <td class="good">78.9%</td>
+          <td class="bad">4</td>
+        </tr>
+        <tr>
+          <td class="team-name">Unihockey Igels Dresden</td>
+          <td>10/26</td>
+          <td class="good">38.5%</td>
+          <td>17/30</td>
+          <td class="good">56.7%</td>
+          <td class="bad">13</td>
+        </tr>
+        <tr>
+          <td class="team-name">DJK Holzbüttgen</td>
+          <td>13/34</td>
+          <td class="good">38.2%</td>
+          <td>31/42</td>
+          <td class="good">73.8%</td>
+          <td class="bad">11</td>
+        </tr>
+        <tr>
+          <td class="team-name">ETV Piranhhas Hamburg</td>
+          <td>10/27</td>
+          <td class="good">37.0%</td>
+          <td>29/36</td>
+          <td class="good">80.6%</td>
+          <td class="bad">7</td>
+        </tr>
+        <tr>
+          <td class="team-name">SC Potsdam</td>
+          <td>11/30</td>
+          <td class="good">36.7%</td>
+          <td>23/50</td>
+          <td class="good">46.0%</td>
+          <td class="bad">27</td>
+        </tr>
+        <tr>
+          <td class="team-name">SC DHfK Leipzig</td>
+          <td>12/35</td>
+          <td class="good">34.3%</td>
+          <td>24/38</td>
+          <td class="good">63.2%</td>
+          <td class="bad">14</td>
+        </tr>
+        <tr>
+          <td class="team-name">UHC Sparkasse Weißenfels</td>
+          <td>9/32</td>
+          <td class="good">28.1%</td>
+          <td>21/33</td>
+          <td class="good">63.6%</td>
+          <td class="bad">12</td>
+        </tr>
+        <tr>
+          <td class="team-name">MFBC Leipzig</td>
+          <td>10/38</td>
+          <td class="good">26.3%</td>
+          <td>16/25</td>
+          <td class="good">64.0%</td>
+          <td class="bad">9</td>
+        </tr>
+        <tr>
+          <td class="team-name">Berlin Rockets</td>
+          <td>12/49</td>
+          <td class="good">24.5%</td>
+          <td>22/32</td>
+          <td class="good">68.8%</td>
+          <td class="bad">10</td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="section card">
+      <h2>Top Scorers (League)</h2>
+      <table>
+        <thead><tr>
+          <th>#</th><th>Player</th><th>Team</th><th>GP</th>
+          <th>G</th><th>A</th><th>Pts</th>
+          <th>Pen2'</th><th>Pen5'</th>
+        </tr></thead>
+        <tbody>
+        <tr class="top3">
+          <td>1</td>
+          <td class="scorer-name">Florian Weißkirchen</td>
+          <td>SSF Dragons Bonn</td>
+          <td>19</td>
+          <td class="good">24</td>
+          <td>29</td>
+          <td class="pts">53</td>
+          <td>3</td>
+          <td>0</td>
+        </tr>
+        <tr class="top3">
+          <td>2</td>
+          <td class="scorer-name">Tuukka Hytönen</td>
+          <td>UHC Sparkasse Weißenfels</td>
+          <td>18</td>
+          <td class="good">31</td>
+          <td>18</td>
+          <td class="pts">49</td>
+          <td>2</td>
+          <td>0</td>
+        </tr>
+        <tr class="top3">
+          <td>3</td>
+          <td class="scorer-name">Jarno Pensikkala</td>
+          <td>DJK Holzbüttgen</td>
+          <td>18</td>
+          <td class="good">29</td>
+          <td>15</td>
+          <td class="pts">44</td>
+          <td>7</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>4</td>
+          <td class="scorer-name">Nils Hofferbert</td>
+          <td>DJK Holzbüttgen</td>
+          <td>18</td>
+          <td class="good">23</td>
+          <td>19</td>
+          <td class="pts">42</td>
+          <td>2</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>5</td>
+          <td class="scorer-name">Michal Strachota</td>
+          <td>Unihockey Igels Dresden</td>
+          <td>18</td>
+          <td class="good">26</td>
+          <td>14</td>
+          <td class="pts">40</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>6</td>
+          <td class="scorer-name">Markuss Januševskis</td>
+          <td>UHC Sparkasse Weißenfels</td>
+          <td>18</td>
+          <td class="good">20</td>
+          <td>20</td>
+          <td class="pts">40</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>7</td>
+          <td class="scorer-name">Philipp Wilbrand</td>
+          <td>ETV Piranhhas Hamburg</td>
+          <td>17</td>
+          <td class="good">22</td>
+          <td>15</td>
+          <td class="pts">37</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>8</td>
+          <td class="scorer-name">Janne Makkonen</td>
+          <td>SC Potsdam</td>
+          <td>18</td>
+          <td class="good">19</td>
+          <td>15</td>
+          <td class="pts">34</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>9</td>
+          <td class="scorer-name">Adrian Stein</td>
+          <td>SSF Dragons Bonn</td>
+          <td>18</td>
+          <td class="good">21</td>
+          <td>10</td>
+          <td class="pts">31</td>
+          <td>4</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>10</td>
+          <td class="scorer-name">Viljami Hana</td>
+          <td>Floor Fighters Chemnitz</td>
+          <td>17</td>
+          <td class="good">20</td>
+          <td>10</td>
+          <td class="pts">30</td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>11</td>
+          <td class="scorer-name">Juuso Suotula</td>
+          <td>SC DHfK Leipzig</td>
+          <td>17</td>
+          <td class="good">13</td>
+          <td>17</td>
+          <td class="pts">30</td>
+          <td>3</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>12</td>
+          <td class="scorer-name">Mark-Oliver Bothe</td>
+          <td>MFBC Leipzig</td>
+          <td>15</td>
+          <td class="good">14</td>
+          <td>15</td>
+          <td class="pts">29</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>13</td>
+          <td class="scorer-name">Luca Vogel</td>
+          <td>ETV Piranhhas Hamburg</td>
+          <td>15</td>
+          <td class="good">18</td>
+          <td>9</td>
+          <td class="pts">27</td>
+          <td>2</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>14</td>
+          <td class="scorer-name">Atte Ronkanen</td>
+          <td>SC Potsdam</td>
+          <td>17</td>
+          <td class="good">13</td>
+          <td>14</td>
+          <td class="pts">27</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>15</td>
+          <td class="scorer-name">Jere Hiironen</td>
+          <td>SC Potsdam</td>
+          <td>18</td>
+          <td class="good">10</td>
+          <td>17</td>
+          <td class="pts">27</td>
+          <td>5</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>16</td>
+          <td class="scorer-name">Iven Teßmann</td>
+          <td>MFBC Leipzig</td>
+          <td>17</td>
+          <td class="good">15</td>
+          <td>11</td>
+          <td class="pts">26</td>
+          <td>4</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>17</td>
+          <td class="scorer-name">Svenson Hoppe</td>
+          <td>MFBC Leipzig</td>
+          <td>18</td>
+          <td class="good">13</td>
+          <td>13</td>
+          <td class="pts">26</td>
+          <td>3</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>18</td>
+          <td class="scorer-name">Mikael Kiukkonen</td>
+          <td>SSF Dragons Bonn</td>
+          <td>19</td>
+          <td class="good">19</td>
+          <td>6</td>
+          <td class="pts">25</td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>19</td>
+          <td class="scorer-name">Hannes Langenstraß</td>
+          <td>Floor Fighters Chemnitz</td>
+          <td>18</td>
+          <td class="good">14</td>
+          <td>11</td>
+          <td class="pts">25</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>20</td>
+          <td class="scorer-name">Milan Koubek</td>
+          <td>Floor Fighters Chemnitz</td>
+          <td>18</td>
+          <td class="good">14</td>
+          <td>11</td>
+          <td class="pts">25</td>
+          <td>2</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>21</td>
+          <td class="scorer-name">Jakub Pecha</td>
+          <td>Unihockey Igels Dresden</td>
+          <td>16</td>
+          <td class="good">13</td>
+          <td>12</td>
+          <td class="pts">25</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>22</td>
+          <td class="scorer-name">Henry Mettovaara</td>
+          <td>SC Potsdam</td>
+          <td>14</td>
+          <td class="good">15</td>
+          <td>9</td>
+          <td class="pts">24</td>
+          <td>4</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>23</td>
+          <td class="scorer-name">Jussi Hakala</td>
+          <td>SC DHfK Leipzig</td>
+          <td>16</td>
+          <td class="good">21</td>
+          <td>2</td>
+          <td class="pts">23</td>
+          <td>2</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>24</td>
+          <td class="scorer-name">Tomas Nyström</td>
+          <td>SSF Dragons Bonn</td>
+          <td>19</td>
+          <td class="good">12</td>
+          <td>11</td>
+          <td class="pts">23</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr class="">
+          <td>25</td>
+          <td class="scorer-name">Radim Kühnel</td>
+          <td>MFBC Leipzig</td>
+          <td>18</td>
+          <td class="good">11</td>
+          <td>12</td>
+          <td class="pts">23</td>
+          <td>6</td>
+          <td>0</td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="section card" id="scorers">
+      <h2>Scorer Stats by Team</h2>
+      <div class="tabs"><div class="tab active" id="scorers-tab-7602" onclick="showTab('scorers','7602')">MFBC Leipzig</div><div class="tab " id="scorers-tab-7606" onclick="showTab('scorers','7606')">UHC Sparkasse Weißenfels</div><div class="tab " id="scorers-tab-7605" onclick="showTab('scorers','7605')">SSF Dragons Bonn</div><div class="tab " id="scorers-tab-7601" onclick="showTab('scorers','7601')">Floor Fighters Chemnitz</div><div class="tab " id="scorers-tab-7600" onclick="showTab('scorers','7600')">ETV Piranhhas Hamburg</div><div class="tab " id="scorers-tab-7603" onclick="showTab('scorers','7603')">SC DHfK Leipzig</div><div class="tab " id="scorers-tab-7599" onclick="showTab('scorers','7599')">DJK Holzbüttgen</div><div class="tab " id="scorers-tab-7607" onclick="showTab('scorers','7607')">Unihockey Igels Dresden</div><div class="tab " id="scorers-tab-7598" onclick="showTab('scorers','7598')">Blau-Weiß 96 Schenefeld</div><div class="tab " id="scorers-tab-7604" onclick="showTab('scorers','7604')">SC Potsdam</div><div class="tab " id="scorers-tab-7597" onclick="showTab('scorers','7597')">Berlin Rockets</div></div>
+      
+        <div class="team-section active" id="scorers-team-7602">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Mark-Oliver Bothe</td>
+              <td>15</td>
+              <td class="good">14</td>
+              <td>15</td>
+              <td class="pts">29</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Iven Teßmann</td>
+              <td>17</td>
+              <td class="good">15</td>
+              <td>11</td>
+              <td class="pts">26</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Svenson Hoppe</td>
+              <td>18</td>
+              <td class="good">13</td>
+              <td>13</td>
+              <td class="pts">26</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Radim Kühnel</td>
+              <td>18</td>
+              <td class="good">11</td>
+              <td>12</td>
+              <td class="pts">23</td>
+              <td>6</td>
+              <td>0</td>
+              <td>12'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Tuomas Saikkonen</td>
+              <td>18</td>
+              <td class="good">10</td>
+              <td>9</td>
+              <td class="pts">19</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Arian Trützschler</td>
+              <td>17</td>
+              <td class="good">4</td>
+              <td>8</td>
+              <td class="pts">12</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Luca Winter</td>
+              <td>18</td>
+              <td class="good">7</td>
+              <td>3</td>
+              <td class="pts">10</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Philip Richter</td>
+              <td>16</td>
+              <td class="good">5</td>
+              <td>3</td>
+              <td class="pts">8</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Benedikt Richardon</td>
+              <td>18</td>
+              <td class="good">4</td>
+              <td>2</td>
+              <td class="pts">6</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Rasmus Nieminen</td>
+              <td>18</td>
+              <td class="good">4</td>
+              <td>1</td>
+              <td class="pts">5</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Lovis Sturm</td>
+              <td>18</td>
+              <td class="good">2</td>
+              <td>3</td>
+              <td class="pts">5</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Felix Linke</td>
+              <td>15</td>
+              <td class="good">2</td>
+              <td>3</td>
+              <td class="pts">5</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Jesaja Hummel</td>
+              <td>13</td>
+              <td class="good">3</td>
+              <td>1</td>
+              <td class="pts">4</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Jonas Damm</td>
+              <td>11</td>
+              <td class="good">3</td>
+              <td>1</td>
+              <td class="pts">4</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Marco Gühlke</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>4</td>
+              <td class="pts">4</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Paul Kretzschmar</td>
+              <td>3</td>
+              <td class="good">1</td>
+              <td>2</td>
+              <td class="pts">3</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Luca Kunkel</td>
+              <td>13</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Linus Persson</td>
+              <td>7</td>
+              <td class="good">0</td>
+              <td>2</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Antti Koistinen</td>
+              <td>18</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Jannis Michaelis</td>
+              <td>12</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Timon Kern</td>
+              <td>16</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Björn Hoppe</td>
+              <td>11</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Marco Pokrandt</td>
+              <td>10</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Oscar Weinert</td>
+              <td>6</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Ville Pesonen</td>
+              <td>6</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td class="scorer-name">Julian Kreuz</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td class="scorer-name">Hendrik Saß</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7606">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Tuukka Hytönen</td>
+              <td>18</td>
+              <td class="good">31</td>
+              <td>18</td>
+              <td class="pts">49</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Markuss Januševskis</td>
+              <td>18</td>
+              <td class="good">20</td>
+              <td>20</td>
+              <td class="pts">40</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Max Gäbler</td>
+              <td>17</td>
+              <td class="good">12</td>
+              <td>7</td>
+              <td class="pts">19</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Florian Böttcher</td>
+              <td>16</td>
+              <td class="good">9</td>
+              <td>8</td>
+              <td class="pts">17</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Daniel Peterson</td>
+              <td>18</td>
+              <td class="good">8</td>
+              <td>8</td>
+              <td class="pts">16</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Niklas Janne Blanke</td>
+              <td>18</td>
+              <td class="good">6</td>
+              <td>10</td>
+              <td class="pts">16</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Mikael Mähönen</td>
+              <td>6</td>
+              <td class="good">9</td>
+              <td>5</td>
+              <td class="pts">14</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Jonas Pohl</td>
+              <td>17</td>
+              <td class="good">10</td>
+              <td>3</td>
+              <td class="pts">13</td>
+              <td>5</td>
+              <td>0</td>
+              <td>10'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Phillip Weigelt</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>10</td>
+              <td class="pts">10</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Julius Laurenz Teichert</td>
+              <td>17</td>
+              <td class="good">5</td>
+              <td>4</td>
+              <td class="pts">9</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Tim Böttcher</td>
+              <td>17</td>
+              <td class="good">1</td>
+              <td>8</td>
+              <td class="pts">9</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Jan Berbig</td>
+              <td>16</td>
+              <td class="good">3</td>
+              <td>5</td>
+              <td class="pts">8</td>
+              <td>5</td>
+              <td>0</td>
+              <td>10'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Pavel Linhart</td>
+              <td>11</td>
+              <td class="good">6</td>
+              <td>0</td>
+              <td class="pts">6</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Hannes Kowalewicz</td>
+              <td>18</td>
+              <td class="good">2</td>
+              <td>2</td>
+              <td class="pts">4</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Max Bandrock</td>
+              <td>16</td>
+              <td class="good">1</td>
+              <td>2</td>
+              <td class="pts">3</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Johannes Jens Voigt</td>
+              <td>17</td>
+              <td class="good">2</td>
+              <td>0</td>
+              <td class="pts">2</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Luca-Leon Beyrich</td>
+              <td>6</td>
+              <td class="good">2</td>
+              <td>0</td>
+              <td class="pts">2</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Marian Thomas</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Pascal Reichert</td>
+              <td>14</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Konstantin Kahlmann</td>
+              <td>9</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Tizian Jäger</td>
+              <td>13</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Franz Dietrich</td>
+              <td>10</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Josef Linke</td>
+              <td>10</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Aaron Johannes Riemer</td>
+              <td>7</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Erik Schnecke</td>
+              <td>4</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td class="scorer-name">Dustin Wandschneider</td>
+              <td>3</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7605">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Florian Weißkirchen</td>
+              <td>19</td>
+              <td class="good">24</td>
+              <td>29</td>
+              <td class="pts">53</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Adrian Stein</td>
+              <td>18</td>
+              <td class="good">21</td>
+              <td>10</td>
+              <td class="pts">31</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Mikael Kiukkonen</td>
+              <td>19</td>
+              <td class="good">19</td>
+              <td>6</td>
+              <td class="pts">25</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Tomas Nyström</td>
+              <td>19</td>
+              <td class="good">12</td>
+              <td>11</td>
+              <td class="pts">23</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Jan Zwak</td>
+              <td>18</td>
+              <td class="good">11</td>
+              <td>9</td>
+              <td class="pts">20</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Topias Ruisla</td>
+              <td>19</td>
+              <td class="good">6</td>
+              <td>11</td>
+              <td class="pts">17</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Justin Obojiagbe</td>
+              <td>19</td>
+              <td class="good">7</td>
+              <td>5</td>
+              <td class="pts">12</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Felix Künnecke</td>
+              <td>10</td>
+              <td class="good">5</td>
+              <td>5</td>
+              <td class="pts">10</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Elias Rensing</td>
+              <td>18</td>
+              <td class="good">4</td>
+              <td>3</td>
+              <td class="pts">7</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Janos Bröker</td>
+              <td>4</td>
+              <td class="good">1</td>
+              <td>5</td>
+              <td class="pts">6</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Boran Jäger</td>
+              <td>16</td>
+              <td class="good">3</td>
+              <td>2</td>
+              <td class="pts">5</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Till Braun</td>
+              <td>17</td>
+              <td class="good">1</td>
+              <td>3</td>
+              <td class="pts">4</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Tobias Schroers</td>
+              <td>17</td>
+              <td class="good">2</td>
+              <td>1</td>
+              <td class="pts">3</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Lutz Ackermann</td>
+              <td>10</td>
+              <td class="good">1</td>
+              <td>2</td>
+              <td class="pts">3</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Veit Bammel</td>
+              <td>18</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Lucas Grünewald</td>
+              <td>17</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Renàrs Capars</td>
+              <td>12</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Levin Leyhe</td>
+              <td>4</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Aaron Niketta</td>
+              <td>19</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Jonathan Böhlendorf</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Kristaps Novikovs</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Mats Wendtland</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Lars Wombacher</td>
+              <td>12</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Ben Grote</td>
+              <td>10</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Paskal Kammer</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td class="scorer-name">Deniz Jäger</td>
+              <td>3</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td class="scorer-name">Johannes Grimm</td>
+              <td>3</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7601">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Viljami Hana</td>
+              <td>17</td>
+              <td class="good">20</td>
+              <td>10</td>
+              <td class="pts">30</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Hannes Langenstraß</td>
+              <td>18</td>
+              <td class="good">14</td>
+              <td>11</td>
+              <td class="pts">25</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Milan Koubek</td>
+              <td>18</td>
+              <td class="good">14</td>
+              <td>11</td>
+              <td class="pts">25</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Leevi Väänänen</td>
+              <td>18</td>
+              <td class="good">11</td>
+              <td>9</td>
+              <td class="pts">20</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Magnus-Ernst Scholz</td>
+              <td>16</td>
+              <td class="good">12</td>
+              <td>5</td>
+              <td class="pts">17</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Valentin Müller</td>
+              <td>15</td>
+              <td class="good">11</td>
+              <td>5</td>
+              <td class="pts">16</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Matias Kyykoski</td>
+              <td>17</td>
+              <td class="good">10</td>
+              <td>5</td>
+              <td class="pts">15</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Olli Vikman</td>
+              <td>6</td>
+              <td class="good">6</td>
+              <td>8</td>
+              <td class="pts">14</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Camill Wagner</td>
+              <td>18</td>
+              <td class="good">1</td>
+              <td>12</td>
+              <td class="pts">13</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Tomas Novotny</td>
+              <td>18</td>
+              <td class="good">5</td>
+              <td>6</td>
+              <td class="pts">11</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Noah Zielke</td>
+              <td>16</td>
+              <td class="good">6</td>
+              <td>4</td>
+              <td class="pts">10</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Julius Dörner</td>
+              <td>17</td>
+              <td class="good">6</td>
+              <td>1</td>
+              <td class="pts">7</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Felix Liebe</td>
+              <td>18</td>
+              <td class="good">4</td>
+              <td>3</td>
+              <td class="pts">7</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Maximilian Schröder</td>
+              <td>15</td>
+              <td class="good">2</td>
+              <td>5</td>
+              <td class="pts">7</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Til Robert Franke</td>
+              <td>11</td>
+              <td class="good">2</td>
+              <td>5</td>
+              <td class="pts">7</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Niki  Lemberg</td>
+              <td>14</td>
+              <td class="good">1</td>
+              <td>5</td>
+              <td class="pts">6</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Daniel Kellermann</td>
+              <td>15</td>
+              <td class="good">2</td>
+              <td>2</td>
+              <td class="pts">4</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Paul Wurlitzer</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>2</td>
+              <td class="pts">2</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Max Beyer</td>
+              <td>13</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Lukas Thieme</td>
+              <td>16</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Pepe  Wurlitzer</td>
+              <td>12</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Leon Lormis</td>
+              <td>11</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Paul Neubert</td>
+              <td>10</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7600">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Philipp Wilbrand</td>
+              <td>17</td>
+              <td class="good">22</td>
+              <td>15</td>
+              <td class="pts">37</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Luca Vogel</td>
+              <td>15</td>
+              <td class="good">18</td>
+              <td>9</td>
+              <td class="pts">27</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Birger Dethlefsen</td>
+              <td>17</td>
+              <td class="good">14</td>
+              <td>8</td>
+              <td class="pts">22</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Jonathan Tore Heins</td>
+              <td>16</td>
+              <td class="good">12</td>
+              <td>7</td>
+              <td class="pts">19</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Flemming Per Kühl</td>
+              <td>17</td>
+              <td class="good">11</td>
+              <td>8</td>
+              <td class="pts">19</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Meinert Wardetzki</td>
+              <td>11</td>
+              <td class="good">7</td>
+              <td>5</td>
+              <td class="pts">12</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Elias Spyridon Paar</td>
+              <td>15</td>
+              <td class="good">6</td>
+              <td>4</td>
+              <td class="pts">10</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Jan Niklas Buckermann</td>
+              <td>17</td>
+              <td class="good">4</td>
+              <td>6</td>
+              <td class="pts">10</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Felix Braun</td>
+              <td>15</td>
+              <td class="good">6</td>
+              <td>3</td>
+              <td class="pts">9</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Pascal Kern</td>
+              <td>13</td>
+              <td class="good">1</td>
+              <td>8</td>
+              <td class="pts">9</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Paul Dall</td>
+              <td>16</td>
+              <td class="good">1</td>
+              <td>7</td>
+              <td class="pts">8</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Tjorven Dethlefsen</td>
+              <td>17</td>
+              <td class="good">2</td>
+              <td>4</td>
+              <td class="pts">6</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Jakob Bohls</td>
+              <td>15</td>
+              <td class="good">1</td>
+              <td>4</td>
+              <td class="pts">5</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Leon Adelmann</td>
+              <td>15</td>
+              <td class="good">1</td>
+              <td>3</td>
+              <td class="pts">4</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Friedo Bohls</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>3</td>
+              <td class="pts">3</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Mats Michel Dose</td>
+              <td>14</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Finn von Kroge</td>
+              <td>13</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Sven Gebert</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Jussi Kursula</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Jonas Jens</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Olli-Oskari Suonmaa</td>
+              <td>12</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Niclas Schreitz</td>
+              <td>4</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Nicolas Flathmann</td>
+              <td>1</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7603">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Juuso Suotula</td>
+              <td>17</td>
+              <td class="good">13</td>
+              <td>17</td>
+              <td class="pts">30</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Jussi Hakala</td>
+              <td>16</td>
+              <td class="good">21</td>
+              <td>2</td>
+              <td class="pts">23</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Lucas Frommhold</td>
+              <td>14</td>
+              <td class="good">6</td>
+              <td>15</td>
+              <td class="pts">21</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Tuomas Hirn</td>
+              <td>17</td>
+              <td class="good">12</td>
+              <td>7</td>
+              <td class="pts">19</td>
+              <td>5</td>
+              <td>0</td>
+              <td>10'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Robert Perl</td>
+              <td>13</td>
+              <td class="good">7</td>
+              <td>6</td>
+              <td class="pts">13</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Ferdinand Ondruschka</td>
+              <td>8</td>
+              <td class="good">8</td>
+              <td>3</td>
+              <td class="pts">11</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Leonard Gunstheim</td>
+              <td>15</td>
+              <td class="good">6</td>
+              <td>5</td>
+              <td class="pts">11</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Niklas Kunath</td>
+              <td>16</td>
+              <td class="good">8</td>
+              <td>0</td>
+              <td class="pts">8</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Julius Ondruschka</td>
+              <td>17</td>
+              <td class="good">4</td>
+              <td>4</td>
+              <td class="pts">8</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Paul Siegmund</td>
+              <td>14</td>
+              <td class="good">3</td>
+              <td>4</td>
+              <td class="pts">7</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Noah Wolbold</td>
+              <td>9</td>
+              <td class="good">4</td>
+              <td>2</td>
+              <td class="pts">6</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Tobias Klamt</td>
+              <td>15</td>
+              <td class="good">3</td>
+              <td>3</td>
+              <td class="pts">6</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Jannik Nitsche</td>
+              <td>15</td>
+              <td class="good">3</td>
+              <td>2</td>
+              <td class="pts">5</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Yoram Wolbold</td>
+              <td>17</td>
+              <td class="good">2</td>
+              <td>3</td>
+              <td class="pts">5</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name"> Lukáš Lhota</td>
+              <td>8</td>
+              <td class="good">2</td>
+              <td>3</td>
+              <td class="pts">5</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Paul Lorenz</td>
+              <td>16</td>
+              <td class="good">2</td>
+              <td>2</td>
+              <td class="pts">4</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Jonas Feichtinger</td>
+              <td>17</td>
+              <td class="good">1</td>
+              <td>2</td>
+              <td class="pts">3</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Melvin Pulow</td>
+              <td>12</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Pit Seifert</td>
+              <td>8</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Julian Kappler</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Johann Fohrenkamm</td>
+              <td>13</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Levin Hirsch</td>
+              <td>3</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Finn Höfer</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Erik Freund</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Mathis Benndorf</td>
+              <td>3</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td class="scorer-name">Arthur Lorenz</td>
+              <td>2</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td class="scorer-name">Nicolaus Ondruschka </td>
+              <td>2</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>28</td>
+              <td class="scorer-name">Janosch Fuchs</td>
+              <td>1</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7599">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Jarno Pensikkala</td>
+              <td>18</td>
+              <td class="good">29</td>
+              <td>15</td>
+              <td class="pts">44</td>
+              <td>7</td>
+              <td>0</td>
+              <td>14'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Nils Hofferbert</td>
+              <td>18</td>
+              <td class="good">23</td>
+              <td>19</td>
+              <td class="pts">42</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Konrad Paul</td>
+              <td>18</td>
+              <td class="good">11</td>
+              <td>9</td>
+              <td class="pts">20</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Joona Heiskanen</td>
+              <td>14</td>
+              <td class="good">14</td>
+              <td>5</td>
+              <td class="pts">19</td>
+              <td>6</td>
+              <td>0</td>
+              <td>12'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Leo Häfner</td>
+              <td>18</td>
+              <td class="good">6</td>
+              <td>11</td>
+              <td class="pts">17</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Niko Latvakoski</td>
+              <td>7</td>
+              <td class="good">8</td>
+              <td>2</td>
+              <td class="pts">10</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Moritz Neustadt</td>
+              <td>17</td>
+              <td class="good">5</td>
+              <td>4</td>
+              <td class="pts">9</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Martin Krametter</td>
+              <td>17</td>
+              <td class="good">3</td>
+              <td>6</td>
+              <td class="pts">9</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Lutz Belcke</td>
+              <td>16</td>
+              <td class="good">5</td>
+              <td>2</td>
+              <td class="pts">7</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Luis Mehler</td>
+              <td>18</td>
+              <td class="good">5</td>
+              <td>1</td>
+              <td class="pts">6</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Noah de Zwaan</td>
+              <td>16</td>
+              <td class="good">2</td>
+              <td>3</td>
+              <td class="pts">5</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Conrad Lehwalder</td>
+              <td>14</td>
+              <td class="good">2</td>
+              <td>2</td>
+              <td class="pts">4</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Lasse Vallema</td>
+              <td>14</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Thilo Ahrens</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>2</td>
+              <td class="pts">2</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Maximilian Schrick</td>
+              <td>14</td>
+              <td class="good">0</td>
+              <td>2</td>
+              <td class="pts">2</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Leo Wehner</td>
+              <td>12</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Tim Westenberger</td>
+              <td>6</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Jan Saurbier</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Maximilian Groß</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Matthias Flatten</td>
+              <td>13</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Marian Feist</td>
+              <td>8</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Jesse van Oosten</td>
+              <td>7</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Philip  Firsbach</td>
+              <td>7</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Dennis Schiffer</td>
+              <td>7</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Chiel Blok</td>
+              <td>6</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td class="scorer-name">Maximilian Karl</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td class="scorer-name">Niklas Stammen</td>
+              <td>1</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7607">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Michal Strachota</td>
+              <td>18</td>
+              <td class="good">26</td>
+              <td>14</td>
+              <td class="pts">40</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Jakub Pecha</td>
+              <td>16</td>
+              <td class="good">13</td>
+              <td>12</td>
+              <td class="pts">25</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Marek Mandler</td>
+              <td>16</td>
+              <td class="good">14</td>
+              <td>7</td>
+              <td class="pts">21</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Patrik Rozkovec</td>
+              <td>9</td>
+              <td class="good">11</td>
+              <td>9</td>
+              <td class="pts">20</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Daniel Hulič</td>
+              <td>19</td>
+              <td class="good">8</td>
+              <td>9</td>
+              <td class="pts">17</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Tomáš Veselý</td>
+              <td>15</td>
+              <td class="good">5</td>
+              <td>8</td>
+              <td class="pts">13</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Florian Schreiber</td>
+              <td>19</td>
+              <td class="good">5</td>
+              <td>7</td>
+              <td class="pts">12</td>
+              <td>5</td>
+              <td>0</td>
+              <td>10'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Maarten Mittmann</td>
+              <td>19</td>
+              <td class="good">3</td>
+              <td>6</td>
+              <td class="pts">9</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Patrik Svoboda</td>
+              <td>13</td>
+              <td class="good">6</td>
+              <td>1</td>
+              <td class="pts">7</td>
+              <td>5</td>
+              <td>0</td>
+              <td>10'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Gabriel Bonifacio</td>
+              <td>11</td>
+              <td class="good">2</td>
+              <td>5</td>
+              <td class="pts">7</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Bruno Haltenorth</td>
+              <td>14</td>
+              <td class="good">4</td>
+              <td>2</td>
+              <td class="pts">6</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Martin Gladigau</td>
+              <td>4</td>
+              <td class="good">1</td>
+              <td>4</td>
+              <td class="pts">5</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Karel Urban</td>
+              <td>17</td>
+              <td class="good">2</td>
+              <td>1</td>
+              <td class="pts">3</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Felix Irrgang</td>
+              <td>6</td>
+              <td class="good">2</td>
+              <td>1</td>
+              <td class="pts">3</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Michael Pitek</td>
+              <td>19</td>
+              <td class="good">2</td>
+              <td>0</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Daniel Hoth</td>
+              <td>12</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Hans Richter</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>2</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Max Kottke</td>
+              <td>18</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Markus Schäfer</td>
+              <td>9</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Robert Rüdrich</td>
+              <td>8</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Jan Dvorak</td>
+              <td>19</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Vincent Bonifacio</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Cornelius König</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Benno Gohrbandt</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Matteo Schanz</td>
+              <td>8</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td class="scorer-name">Valentin König</td>
+              <td>7</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td class="scorer-name">Marcel Schulze</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7598">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Marius Schwartz</td>
+              <td>18</td>
+              <td class="good">11</td>
+              <td>9</td>
+              <td class="pts">20</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Frederic Thiele</td>
+              <td>11</td>
+              <td class="good">7</td>
+              <td>13</td>
+              <td class="pts">20</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Justus Karnath</td>
+              <td>17</td>
+              <td class="good">15</td>
+              <td>3</td>
+              <td class="pts">18</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Timo Rother</td>
+              <td>12</td>
+              <td class="good">8</td>
+              <td>9</td>
+              <td class="pts">17</td>
+              <td>7</td>
+              <td>0</td>
+              <td>14'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Christoph Goers</td>
+              <td>18</td>
+              <td class="good">8</td>
+              <td>6</td>
+              <td class="pts">14</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Sören Gittek</td>
+              <td>17</td>
+              <td class="good">7</td>
+              <td>7</td>
+              <td class="pts">14</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Daniel Czapelka</td>
+              <td>15</td>
+              <td class="good">5</td>
+              <td>1</td>
+              <td class="pts">6</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Jonas-Fynn Wende</td>
+              <td>17</td>
+              <td class="good">4</td>
+              <td>1</td>
+              <td class="pts">5</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Johannes Ventz</td>
+              <td>17</td>
+              <td class="good">4</td>
+              <td>0</td>
+              <td class="pts">4</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Lukas Franck</td>
+              <td>13</td>
+              <td class="good">4</td>
+              <td>0</td>
+              <td class="pts">4</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Georg-Martin Gahnz</td>
+              <td>13</td>
+              <td class="good">2</td>
+              <td>2</td>
+              <td class="pts">4</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Keno Volkmann</td>
+              <td>16</td>
+              <td class="good">3</td>
+              <td>0</td>
+              <td class="pts">3</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Lasse Schmidt</td>
+              <td>13</td>
+              <td class="good">3</td>
+              <td>0</td>
+              <td class="pts">3</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Tim  Glindemann</td>
+              <td>16</td>
+              <td class="good">0</td>
+              <td>3</td>
+              <td class="pts">3</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Christian Alexander Besch</td>
+              <td>16</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Max Rudolf Schultz</td>
+              <td>14</td>
+              <td class="good">0</td>
+              <td>2</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Henry Wilhelm Mursch</td>
+              <td>12</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Samuel Meyer</td>
+              <td>9</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Julian Langfeldt</td>
+              <td>13</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Christopher Ostwald</td>
+              <td>8</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Benedikt Fiedrich</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Frederik Hans</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Kilian  Meyberg</td>
+              <td>16</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Jonah Koop</td>
+              <td>15</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Ian Meyer</td>
+              <td>4</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>26</td>
+              <td class="scorer-name">Moritz Stößner</td>
+              <td>2</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7604">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Janne Makkonen</td>
+              <td>18</td>
+              <td class="good">19</td>
+              <td>15</td>
+              <td class="pts">34</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Atte Ronkanen</td>
+              <td>17</td>
+              <td class="good">13</td>
+              <td>14</td>
+              <td class="pts">27</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Jere Hiironen</td>
+              <td>18</td>
+              <td class="good">10</td>
+              <td>17</td>
+              <td class="pts">27</td>
+              <td>5</td>
+              <td>0</td>
+              <td>10'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Henry Mettovaara</td>
+              <td>14</td>
+              <td class="good">15</td>
+              <td>9</td>
+              <td class="pts">24</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Anton Sehorcz</td>
+              <td>17</td>
+              <td class="good">11</td>
+              <td>3</td>
+              <td class="pts">14</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Jasu Lind</td>
+              <td>9</td>
+              <td class="good">8</td>
+              <td>4</td>
+              <td class="pts">12</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Simon Janiszewski</td>
+              <td>17</td>
+              <td class="good">3</td>
+              <td>4</td>
+              <td class="pts">7</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Ole Gerdsen</td>
+              <td>17</td>
+              <td class="good">4</td>
+              <td>2</td>
+              <td class="pts">6</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Jonas Henschler</td>
+              <td>18</td>
+              <td class="good">2</td>
+              <td>4</td>
+              <td class="pts">6</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Joona Nieminen</td>
+              <td>5</td>
+              <td class="good">5</td>
+              <td>0</td>
+              <td class="pts">5</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">David Mix</td>
+              <td>16</td>
+              <td class="good">3</td>
+              <td>2</td>
+              <td class="pts">5</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">Lasse Fischer</td>
+              <td>10</td>
+              <td class="good">2</td>
+              <td>1</td>
+              <td class="pts">3</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Martin Hoffmann</td>
+              <td>10</td>
+              <td class="good">2</td>
+              <td>0</td>
+              <td class="pts">2</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Pascal Dubail</td>
+              <td>18</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Oscar Galow</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Erik Brosius</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Lasse Englund</td>
+              <td>12</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Quentin Vallee</td>
+              <td>16</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Nico Hoffmann</td>
+              <td>10</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Christoph Ort</td>
+              <td>9</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Marvin Schumann</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Milo Grubinger</td>
+              <td>5</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Silas Findeklee</td>
+              <td>4</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>24</td>
+              <td class="scorer-name">Patrick Hering</td>
+              <td>2</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>25</td>
+              <td class="scorer-name">Lukas Wangnet</td>
+              <td>1</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <div class="team-section " id="scorers-team-7597">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Player</th><th>GP</th>
+              <th>G</th><th>A</th><th>Pts</th>
+              <th>Pen2'</th><th>Pen5'</th><th>PIM</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+              <td>1</td>
+              <td class="scorer-name">Anton Weyrauch</td>
+              <td>18</td>
+              <td class="good">11</td>
+              <td>8</td>
+              <td class="pts">19</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="scorer-name">Vincent Jordan</td>
+              <td>14</td>
+              <td class="good">11</td>
+              <td>8</td>
+              <td class="pts">19</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="scorer-name">Eemil Laube</td>
+              <td>18</td>
+              <td class="good">7</td>
+              <td>9</td>
+              <td class="pts">16</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="scorer-name">Luca Invernizzi</td>
+              <td>14</td>
+              <td class="good">6</td>
+              <td>7</td>
+              <td class="pts">13</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="scorer-name">Leon Schweiger</td>
+              <td>8</td>
+              <td class="good">7</td>
+              <td>4</td>
+              <td class="pts">11</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="scorer-name">Jannes Wolff</td>
+              <td>17</td>
+              <td class="good">5</td>
+              <td>3</td>
+              <td class="pts">8</td>
+              <td>5</td>
+              <td>0</td>
+              <td>10'</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="scorer-name">Tim Sigmund</td>
+              <td>15</td>
+              <td class="good">4</td>
+              <td>2</td>
+              <td class="pts">6</td>
+              <td>4</td>
+              <td>0</td>
+              <td>8'</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="scorer-name">Jami Savolainen</td>
+              <td>10</td>
+              <td class="good">1</td>
+              <td>5</td>
+              <td class="pts">6</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="scorer-name">Jan Alexander Schweiger</td>
+              <td>11</td>
+              <td class="good">4</td>
+              <td>1</td>
+              <td class="pts">5</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="scorer-name">Marten Bonk</td>
+              <td>15</td>
+              <td class="good">3</td>
+              <td>2</td>
+              <td class="pts">5</td>
+              <td>3</td>
+              <td>0</td>
+              <td>6'</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="scorer-name">Frederik Bonk</td>
+              <td>17</td>
+              <td class="good">2</td>
+              <td>3</td>
+              <td class="pts">5</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td class="scorer-name">David Lichtwer</td>
+              <td>15</td>
+              <td class="good">1</td>
+              <td>3</td>
+              <td class="pts">4</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="scorer-name">Domenick Rotgang</td>
+              <td>15</td>
+              <td class="good">1</td>
+              <td>2</td>
+              <td class="pts">3</td>
+              <td>1</td>
+              <td>0</td>
+              <td>2'</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="scorer-name">Daofu Jin</td>
+              <td>10</td>
+              <td class="good">2</td>
+              <td>0</td>
+              <td class="pts">2</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="scorer-name">Kjell Oke Dittloff</td>
+              <td>10</td>
+              <td class="good">1</td>
+              <td>1</td>
+              <td class="pts">2</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td class="scorer-name">Oliver Doyle Andersson</td>
+              <td>8</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td class="scorer-name">Daniel Florian Janz</td>
+              <td>7</td>
+              <td class="good">1</td>
+              <td>0</td>
+              <td class="pts">1</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td class="scorer-name">Jakob Caspar Schnaithmann</td>
+              <td>18</td>
+              <td class="good">0</td>
+              <td>1</td>
+              <td class="pts">1</td>
+              <td>2</td>
+              <td>0</td>
+              <td>4'</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td class="scorer-name">Maciej Jastrzebski</td>
+              <td>17</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td class="scorer-name">Rasmus Gley</td>
+              <td>9</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>21</td>
+              <td class="scorer-name">Clemens Bandrock</td>
+              <td>8</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>22</td>
+              <td class="scorer-name">Leander Wittig</td>
+              <td>6</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr>
+            <tr>
+              <td>23</td>
+              <td class="scorer-name">Eeli Süar</td>
+              <td>1</td>
+              <td class="good">0</td>
+              <td>0</td>
+              <td class="pts">0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0'</td>
+            </tr></tbody>
+          </table>
+        </div>
+    </div>
+    <div class="section card">
+      <h2>Penalty Minutes Leaders</h2>
+      <table>
+        <thead><tr>
+          <th>#</th><th>Player</th><th>Team</th>
+          <th>Penalties 2'</th><th>Penalties 5'</th><th>Total PIM</th>
+        </tr></thead>
+        <tbody>
+        <tr>
+          <td>1</td>
+          <td class="scorer-name">Jarno Pensikkala</td>
+          <td>DJK Holzbüttgen</td>
+          <td>7</td>
+          <td>0</td>
+          <td class="bad">14'</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td class="scorer-name">Timo Rother</td>
+          <td>Blau-Weiß 96 Schenefeld</td>
+          <td>7</td>
+          <td>0</td>
+          <td class="bad">14'</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td class="scorer-name">Radim Kühnel</td>
+          <td>MFBC Leipzig</td>
+          <td>6</td>
+          <td>0</td>
+          <td class="bad">12'</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td class="scorer-name">Joona Heiskanen</td>
+          <td>DJK Holzbüttgen</td>
+          <td>6</td>
+          <td>0</td>
+          <td class="bad">12'</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td class="scorer-name">Jere Hiironen</td>
+          <td>SC Potsdam</td>
+          <td>5</td>
+          <td>0</td>
+          <td class="bad">10'</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td class="scorer-name">Tuomas Hirn</td>
+          <td>SC DHfK Leipzig</td>
+          <td>5</td>
+          <td>0</td>
+          <td class="bad">10'</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td class="scorer-name">Jonas Pohl</td>
+          <td>UHC Sparkasse Weißenfels</td>
+          <td>5</td>
+          <td>0</td>
+          <td class="bad">10'</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td class="scorer-name">Florian Schreiber</td>
+          <td>Unihockey Igels Dresden</td>
+          <td>5</td>
+          <td>0</td>
+          <td class="bad">10'</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td class="scorer-name">Jannes Wolff</td>
+          <td>Berlin Rockets</td>
+          <td>5</td>
+          <td>0</td>
+          <td class="bad">10'</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td class="scorer-name">Jan Berbig</td>
+          <td>UHC Sparkasse Weißenfels</td>
+          <td>5</td>
+          <td>0</td>
+          <td class="bad">10'</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td class="scorer-name">Patrik Svoboda</td>
+          <td>Unihockey Igels Dresden</td>
+          <td>5</td>
+          <td>0</td>
+          <td class="bad">10'</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td class="scorer-name">Adrian Stein</td>
+          <td>SSF Dragons Bonn</td>
+          <td>4</td>
+          <td>0</td>
+          <td class="bad">8'</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td class="scorer-name">Iven Teßmann</td>
+          <td>MFBC Leipzig</td>
+          <td>4</td>
+          <td>0</td>
+          <td class="bad">8'</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td class="scorer-name">Henry Mettovaara</td>
+          <td>SC Potsdam</td>
+          <td>4</td>
+          <td>0</td>
+          <td class="bad">8'</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td class="scorer-name">Birger Dethlefsen</td>
+          <td>ETV Piranhhas Hamburg</td>
+          <td>4</td>
+          <td>0</td>
+          <td class="bad">8'</td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="section card">
+      <h2>Game Day 20</h2>
+      
+        <div class="schedule-item">
+          <div class="schedule-teams">
+            <div class="schedule-home">SC DHfK Leipzig</div>
+            <div class="schedule-vs">vs.</div>
+            <div class="schedule-guest">SSF Dragons Bonn</div>
+          </div>
+          <div class="result-score">5:6 n.V.</div>
+          <div class="schedule-meta">
+            <div>2026-03-07 17:00</div>
+            <div>Sporthalle am Rabet</div>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-teams">
+            <div class="schedule-home">Berlin Rockets</div>
+            <div class="schedule-vs">vs.</div>
+            <div class="schedule-guest">UHC Sparkasse Weißenfels</div>
+          </div>
+          <div class="result-score">3:12</div>
+          <div class="schedule-meta">
+            <div>2026-03-07 18:00</div>
+            <div>Sporthalle Havelland-Grundschule</div>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-teams">
+            <div class="schedule-home">Unihockey Igels Dresden</div>
+            <div class="schedule-vs">vs.</div>
+            <div class="schedule-guest">MFBC Leipzig</div>
+          </div>
+          <div class="result-score">3:7</div>
+          <div class="schedule-meta">
+            <div>2026-03-07 18:00</div>
+            <div>121. Oberschule</div>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-teams">
+            <div class="schedule-home">ETV Piranhhas Hamburg</div>
+            <div class="schedule-vs">vs.</div>
+            <div class="schedule-guest">Blau-Weiß 96 Schenefeld</div>
+          </div>
+          <div class="result-score">8:6</div>
+          <div class="schedule-meta">
+            <div>2026-03-07 18:00</div>
+            <div>Sporthalle Hoheluft</div>
+          </div>
+        </div>
+    </div>
+  </div>
+  <script>
+function showTab(section, teamId) {
+    document.querySelectorAll('#' + section + ' .team-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#' + section + ' .tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(section + '-team-' + teamId).classList.add('active');
+    document.getElementById(section + '-tab-' + teamId).classList.add('active');
+}
+</script>
+</body>
+</html>

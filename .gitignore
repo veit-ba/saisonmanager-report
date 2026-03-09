@@ -1,0 +1,39 @@
+# Persönliche Konfigurationsdatei (enthält private Daten)
+config.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Logs
+*.log
+
+# Test files
+test_*.py
+*_test.py
+
+# Optional: Backup-Dateien
+*.bak
+*.backup
+
+.claude/
+.github/
