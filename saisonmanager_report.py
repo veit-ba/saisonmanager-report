@@ -256,15 +256,51 @@ tbody td:first-child { color: var(--text); }
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .grid-auto { grid-template-columns: 1fr; }
 }
+.refresh-btn { display: flex; align-items: center; gap: 7px; background: var(--accent);
+    color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: .9rem;
+    font-weight: 600; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+.refresh-btn:hover { opacity: .85; }
+.refresh-btn:disabled { opacity: .5; cursor: not-allowed; }
+.refresh-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.refresh-status { font-size: .82rem; color: var(--muted); margin-top: 6px; min-height: 18px; }
+.refresh-status.ok  { color: var(--green); }
+.refresh-status.err { color: var(--red); }
 """
 
-JS = """
-function showTab(section, teamId) {
+WORKER_URL = "https://saisonmanager-report.veit-bammel.workers.dev"
+
+JS = f"""
+function showTab(section, teamId) {{
     document.querySelectorAll('#' + section + ' .team-section').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('#' + section + ' .tab').forEach(el => el.classList.remove('active'));
     document.getElementById(section + '-team-' + teamId).classList.add('active');
     document.getElementById(section + '-tab-' + teamId).classList.add('active');
-}
+}}
+
+async function triggerRefresh() {{
+    const btn    = document.getElementById('refresh-btn');
+    const status = document.getElementById('refresh-status');
+    btn.disabled = true;
+    status.className = 'refresh-status';
+    status.textContent = 'Starting update...';
+
+    try {{
+        const res  = await fetch('{WORKER_URL}', {{ method: 'POST' }});
+        const data = await res.json();
+        if (data.ok) {{
+            status.className = 'refresh-status ok';
+            status.textContent = 'Update started. Reload page in ~2 min.';
+        }} else {{
+            status.className = 'refresh-status err';
+            status.textContent = 'Error: ' + (data.error || 'Unknown');
+        }}
+    }} catch (e) {{
+        status.className = 'refresh-status err';
+        status.textContent = 'Network error: ' + e.message;
+    }} finally {{
+        btn.disabled = false;
+    }}
+}}
 """
 
 
@@ -296,7 +332,18 @@ def html_header(league_info: dict) -> str:
         <h1>{name}</h1>
         <div class="header-meta">{op} &nbsp;·&nbsp; As of: {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
       </div>
-      <span class="badge">Season 2025/2026</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="badge">Season 2025/2026</span>
+          <button id="refresh-btn" class="refresh-btn" onclick="triggerRefresh()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+              <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+            </svg>
+            Refresh Data
+          </button>
+          <div id="refresh-status" class="refresh-status"></div>
+      </div>
     </div>
     """
 
@@ -707,7 +754,7 @@ def main():
 </body>
 </html>"""
 
-    output_path = "output/liga_report.html"
+    output_path = "docs/index.html"
     import os
     os.makedirs("output", exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
