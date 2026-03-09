@@ -754,7 +754,7 @@ def main():
 </body>
 </html>"""
 
-    output_path = "output/liga_report.html"
+    output_path = "docs/index.html"
     import os
     os.makedirs("output", exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
