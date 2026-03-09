@@ -25,11 +25,6 @@ jobs:
       - name: Report generieren
         run: python saisonmanager_report.py
 
-      - name: Report nach docs/ kopieren
-        run: |
-          mkdir -p docs
-          cp output/liga_report.html docs/index.html
-
       - name: Änderungen committen und pushen
         run: |
           git config user.name "github-actions[bot]"
