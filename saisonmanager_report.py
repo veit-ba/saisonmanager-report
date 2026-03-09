@@ -282,21 +282,21 @@ async function triggerRefresh() {{
     const status = document.getElementById('refresh-status');
     btn.disabled = true;
     status.className = 'refresh-status';
-    status.textContent = 'Daten werden aktualisiert...';
+    status.textContent = 'Starting update...';
 
     try {{
         const res  = await fetch('{WORKER_URL}', {{ method: 'POST' }});
         const data = await res.json();
         if (data.ok) {{
             status.className = 'refresh-status ok';
-            status.textContent = 'Aktualisierung gestartet. Seite in ~2 Min. neu laden.';
+            status.textContent = 'Update started. Reload page in ~2 min.';
         }} else {{
             status.className = 'refresh-status err';
-            status.textContent = 'Fehler: ' + (data.error || 'Unbekannt');
+            status.textContent = 'Error: ' + (data.error || 'Unknown');
         }}
     }} catch (e) {{
         status.className = 'refresh-status err';
-        status.textContent = 'Netzwerkfehler: ' + e.message;
+        status.textContent = 'Network error: ' + e.message;
     }} finally {{
         btn.disabled = false;
     }}
@@ -340,7 +340,7 @@ def html_header(league_info: dict) -> str:
               <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
               <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
             </svg>
-            Daten aktualisieren
+            Refresh Data
           </button>
           <div id="refresh-status" class="refresh-status"></div>
       </div>
