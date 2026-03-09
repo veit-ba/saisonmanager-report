@@ -36,3 +36,4 @@ test_*.py
 *.backup
 
 .claude/
+output/
