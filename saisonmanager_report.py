@@ -6,6 +6,7 @@ Erstellt einen HTML-Report mit detaillierten Statistiken für Liga 1890.
 import requests
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from collections import defaultdict
 import concurrent.futures
 
@@ -330,7 +331,7 @@ def html_header(league_info: dict) -> str:
     <div class="header">
       <div class="header-text">
         <h1>{name}</h1>
-        <div class="header-meta">{op} &nbsp;·&nbsp; As of: {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+        <div class="header-meta">{op} &nbsp;·&nbsp; As of: {datetime.now(ZoneInfo('Europe/Berlin')).strftime('%Y-%m-%d %H:%M')}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
           <span class="badge">Season 2025/2026</span>
