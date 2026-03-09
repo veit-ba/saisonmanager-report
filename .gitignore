@@ -36,4 +36,10 @@ test_*.py
 *.backup
 
 .claude/
-output/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
