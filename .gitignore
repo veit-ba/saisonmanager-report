@@ -36,4 +36,3 @@ test_*.py
 *.backup
 
 .claude/
-.github/
